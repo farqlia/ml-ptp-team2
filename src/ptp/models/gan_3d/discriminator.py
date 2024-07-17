@@ -40,29 +40,37 @@ class Discriminator(pl.LightningModule):
             nn.LeakyReLU(0.2),
             nn.Dropout(0.3),
             nn.Conv3d(16, 32, kernel_size=3, stride=2, padding=1, bias=False),  # 32, 64, 64, 64
-            nn.InstanceNorm3d(32, affine=True),
+            nn.BatchNorm3d(32),
             nn.LeakyReLU(0.2),
             nn.Dropout(0.3),
             nn.Conv3d(32, 64, kernel_size=3, stride=2, padding=1, bias=False),  # 64, 32, 32, 32
-            nn.InstanceNorm3d(64, affine=True),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2),
             nn.Dropout(0.3),
             nn.Conv3d(64, 64, kernel_size=3, stride=2, padding=1, bias=False),  # 128, 16, 16, 16
-            nn.InstanceNorm3d(64, affine=True),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2),
             nn.Dropout(0.3),
             nn.Conv3d(64, 128, kernel_size=3, stride=2, padding=1, bias=False),  # 128, 8, 8, 8
-            nn.InstanceNorm3d(128, affine=True),
+            nn.BatchNorm3d(128),
             nn.LeakyReLU(0.2),
-            nn.Dropout(0.3),
-            nn.Conv3d(128, 1, kernel_size=4, bias=False),
+            nn.Conv3d(128, 256, kernel_size=3, stride=2, padding=1, bias=False),  # 256, 4, 4, 4
+            nn.BatchNorm3d(256),
+            nn.LeakyReLU(0.2)
         ])
+
+        self.linears = nn.ModuleList([
+            nn.Linear(2048, 1)
+        ])
+
 
     def forward(self, x):
         batch_size = x.shape[0]
         for l in self.layers:
             x = l(x)
         x = x.view(batch_size, -1)
+        for l in self.linears:
+            x = l(x)
         return x
 
 

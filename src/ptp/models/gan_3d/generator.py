@@ -13,13 +13,13 @@ class Generator(pl.LightningModule):
         self.down1 = nn.Sequential(
             # input: 1, 256, 256, 256
             nn.Conv3d(1, 64, kernel_size=3, stride=2, padding=1, bias=False),  # 64, 128, 128, 128
-            nn.BatchNorm3d(64, momentum=0.9),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2)
         )
 
         self.down2 = nn.Sequential(
             nn.Conv3d(64, 64, kernel_size=3, stride=2, padding=1, bias=False),  # 64, 64, 64, 64
-            nn.BatchNorm3d(64, momentum=0.9),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2)
         )
 
@@ -28,7 +28,7 @@ class Generator(pl.LightningModule):
         # part to create lower resolution features
         self.down3 = nn.Sequential(
             nn.Conv3d(64, 32, kernel_size=3, stride=2, padding=1, bias=False),  # 32, 32, 32, 32
-            nn.BatchNorm3d(32, momentum=0.9),
+            nn.BatchNorm3d(32),
             nn.LeakyReLU(0.2)
         )
 
@@ -38,17 +38,17 @@ class Generator(pl.LightningModule):
 
         self.upsampling = nn.Sequential(
             nn.ConvTranspose3d(32, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
-            nn.BatchNorm3d(64, momentum=0.9),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2)
         )  # 64, 64, 64, 64
 
         # concatenate to have 128, 64, 64, 64
         self.up2 = nn.Sequential(
             nn.ConvTranspose3d(128, 64, kernel_size=2, stride=2),
-            nn.BatchNorm3d(64, momentum=0.9),
+            nn.BatchNorm3d(64),
             nn.LeakyReLU(0.2),
             nn.ConvTranspose3d(64, 1, kernel_size=2, stride=2),
-            nn.BatchNorm3d(1, momentum=0.9),
+            nn.BatchNorm3d(1),
             nn.LeakyReLU(0.2)
         )  # 1, ??
 
