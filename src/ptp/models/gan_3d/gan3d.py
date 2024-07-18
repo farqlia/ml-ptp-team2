@@ -28,7 +28,7 @@ class GAN3D(pl.LightningModule):
 
     # recon_loss : reconstruction loss, either mse or tce
     def __init__(self, target_data_dir, model_dir, percentile=0.05, n_critic=4, recon_loss=F.mse_loss,
-                 lambda_penalty=10, batch_size=1, d_lr=0.0001, g_lr=0.0001):
+                 weight_clip=0.01, batch_size=1, d_lr=0.0001, g_lr=0.0001):
         super().__init__()
         self.G = Generator()
         self.D = Discriminator(1)
@@ -127,9 +127,7 @@ class GAN3D(pl.LightningModule):
         d_z = self.D(g_X.detach())
         errD_fake = torch.mean(d_z)
 
-        gp = gradient_penalty(self.D, targets, g_X, device=self.device)
-
-        errD = errD_fake - errD_real + self.lambda_penalty * gp
+        errD = errD_fake - errD_real
 
         #############
         # Generator #
