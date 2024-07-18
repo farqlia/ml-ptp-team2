@@ -39,7 +39,7 @@ class GAN3D(pl.LightningModule):
         self.batch_size = batch_size
         self.d_lr = d_lr
         self.g_lr = g_lr
-        self.lambda_penalty = lambda_penalty
+        self.weight_clip = weight_clip
         self.transforms = [LoadImaged(keys=['target']),
                            RescaleTransform(keys=['target']),
                            EnsureChannelFirstd(keys=['target']),
@@ -77,14 +77,15 @@ class GAN3D(pl.LightningModule):
 
         errD_fake = torch.mean(d_z)  # error of predicting generator's output as fake
 
-        gp = gradient_penalty(self.D, X_original, g_X, device=self.device)
-
-        errD = errD_fake - errD_real + self.lambda_penalty * gp  # same as -(errD_real - errD_fake)
+        errD = errD_fake - errD_real  # same as -(errD_real - errD_fake)
 
         # We optimize only discriminator's parameters
         d_opt.zero_grad()
         self.manual_backward(errD)
         d_opt.step()
+
+        for p in self.D.parameters():
+            p.data.clamp_(-self.weight_clip, self.weight_clip)
 
         #############
         # Generator #
@@ -107,7 +108,7 @@ class GAN3D(pl.LightningModule):
             self.log_dict({'g_loss': errG, 'errG_pred': errG_pred, 'errG_recon': errG_recon},
                           prog_bar=True, on_epoch=True)
 
-        self.log_dict({'d_loss': errD, 'errD_real': errD_real, 'errD_fake': errD_fake, 'gp': gp},
+        self.log_dict({'d_loss': errD, 'errD_real': errD_real, 'errD_fake': errD_fake},
                       prog_bar=True, on_epoch=True)
         self.compt_step += 1
 
